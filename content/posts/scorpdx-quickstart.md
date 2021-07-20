@@ -47,7 +47,7 @@ LibCK3's parser returns an [RFC 8259](https://datatracker.ietf.org/doc/html/rfc8
 
 ### ck3json
 
-[ck3json](https://github.com/scorpdx/ck3json) is a console application to convert plaintext format Crusader Kings 3 saves into JSON format, as well as melting binary (ironman) saves into plaintext format. It contains a Parsing Expression Grammar definition that can be helpful for developers need to extract data from CK3.
+[ck3json](https://github.com/scorpdx/ck3json) is a console application to convert plaintext format Crusader Kings 3 saves into JSON format, as well as melting binary (ironman) saves into plaintext format. It contains a Parsing Expression Grammar definition that can be helpful for developers who need to extract data from CK3.
 
 The binary tokens used for melting are not actively updated, but can be extracted from [LibCK3.Tokens](#libck3). The PEG definition should continue to work, barring major changes to the CK3 savegame format.
 
