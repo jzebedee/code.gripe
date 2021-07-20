@@ -1,7 +1,6 @@
 ---
 title: "scorPDX Quickstart"
 date: 2021-07-20T14:18:28-05:00
-draft: true
 ---
 
 # scorPDX Quickstart
