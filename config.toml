@@ -2,3 +2,21 @@ baseURL = "https://code.gripe/"
 languageCode = "en-us"
 title = "😡 code.gripe"
 theme = "npq-hugo"
+
+enableRobotsTXT = true
+canonifyURLs = true
+
+pygmentsUseClasses=true
+
+[params]
+  author = "J. Zebedee"
+  description = "code gripes: development, debugging, performance"
+  keywords = "code gripe development debugging performance dotnet rust"
+# useAvatar = true
+# microBlogSection = "posts"
+# displayMicroBlog = true
+# displayRecent = true
+# recentMax = 4
+# mail = "example@example.com"
+# phone = "8888888888"
+# formspreeID = "yourformspreeID"
