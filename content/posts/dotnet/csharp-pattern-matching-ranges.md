@@ -1,8 +1,10 @@
 ---
 title: "C# Pattern Matching Ranges"
 date: 2021-10-21T11:27:58-05:00
-draft: true
+draft: false
 ---
+
+# Pattern matching ranges
 
 C# 9.0 introduced [new features in pattern matching](https://github.com/dotnet/csharplang/issues/2850) that allow range expressions (`<`, `>`, `<=`, `>=`) in `switch`es.
 
