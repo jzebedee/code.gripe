@@ -1,1 +1,123 @@
-<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="code gripes: development, debugging, performance"><meta name=Author content="J. Zebedee"><meta name=keywords content="code gripe development debugging performance dotnet rust"><link rel=stylesheet href=https://code.gripe/css/syntax.css><link rel=stylesheet href=https://code.gripe/css/style.css><script src=https://kit.fontawesome.com/1b7478c139.js crossorigin=anonymous></script><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/code.gripe\/"},"articleSection":"posts","name":"scorPDX Quickstart","headline":"scorPDX Quickstart","description":"scorPDX Quickstart scorpdx is a collection of tools and libraries that work with Paradox Interactive games. These are helpful for both Paradox players and developers who create mods and extensions for Paradox games.\nDiscussion, technical support, and developer chit-chat is available on Discord.\nFor Players ⚒️ironmunge Savescum in ironman, explore multiple timelines, and never lose a savegame again\n⚒️ironmunge is a general purpose save manager for Paradox Interactive titles. It automatically manages multiple timelines that you can switch between and explore during a campaign.","inLanguage":"en-US","author":"","creator":"","publisher":"","accountablePerson":"","copyrightHolder":"","copyrightYear":"20207","datePublished":"2021-07-20 14:18:28 -0500 -0500","dateModified":"2021-07-20 14:18:28 -0500 -0500","url":"https:\/\/code.gripe\/posts\/scorpdx-quickstart\/","wordCount":"472","keywords":["Blog"]}</script><title>😡 code.gripe</title></head><body><aside id=sidenav><header><a id=branding href=https://code.gripe/>😡 code.gripe</a></header><nav></nav></aside><main id=main><a href=javascript:void(0) id=closebtn onclick=navToggle()><i class="fas fa-bars fa-lg"></i></a><div class=content><h1 id=title>scorPDX Quickstart</h1><nav id=TableOfContents><ul><li><a href=#for-players>For Players</a><ul><li><a href=#ironmunge>⚒️ironmunge</a></li><li><a href=#portraitbuilder>PortraitBuilder</a></li></ul></li><li><a href=#for-developers>For Developers</a><ul><li><a href=#libck3>LibCK3</a></li><li><a href=#ck3json>ck3json</a></li><li><a href=#ck2json>ck2json</a></li><li><a href=#portraitbuilder-dev>PortraitBuilder</a></li><li><a href=#chronicler>Chronicler</a></li></ul></li></ul></nav><h1 id=scorpdx-quickstart>scorPDX Quickstart</h1><p><a href=https://github.com/scorpdx>scorpdx</a> is a collection of tools and libraries that work with Paradox Interactive games. These are helpful for both Paradox players and developers who create mods and extensions for Paradox games.</p><p>Discussion, technical support, and developer chit-chat is available on <a href=https://discord.gg/FkRPyz6kcD>Discord</a>.</p><h2 id=for-players>For Players</h2><h3 id=ironmunge>⚒️ironmunge</h3><p>Savescum in ironman, explore multiple timelines, and never lose a savegame again</p><p><a href=https://github.com/scorpdx/ironmunge>⚒️ironmunge</a> is a general purpose save manager for Paradox Interactive titles. It automatically manages multiple timelines that you can switch between and explore during a campaign. It currently supports Crusader Kings II (released) and Crusader Kings 3 (to be released Soon™️).</p><h4 id=download-on-githubhttpsgithubcomscorpdxironmungereleases><a href=https://github.com/scorpdx/ironmunge/releases>Download on Github</a></h4><h3 id=portraitbuilder>PortraitBuilder</h3><p>Create your own CK2 avatar</p><p><img src="https://portrait.ga/portrait?dna=00000000aa0&properties=p000000000000000000000000000000000j000&base=horsegfx_female&clothing=horsegfx_female&government=ChineseImperial&titlerank=Emperor" alt="Chinese Empress Unicorn"></p><h4 id=download-on-githubhttpsgithubcomscorpdxportraitbuilderreleases><a href=https://github.com/scorpdx/portraitbuilder/releases>Download on Github</a></h4><h2 id=for-developers>For Developers</h2><table><thead><tr><th>Tool</th><th>Blurb</th></tr></thead><tbody><tr><td><a href=#libck3>LibCK3</a></td><td>Parse binary (ironman) CK3 saves and turn them into JSON</td></tr><tr><td><a href=#libck3>LibCK3.Tokens</a></td><td>Binary (ironman) token definitions for every CK3 patch</td></tr><tr><td><a href=#ck3json>ck3json</a></td><td>Parse plaintext or binary CK3 saves and turn them into JSON</td></tr><tr><td><a href=#ck2json>ck2json</a></td><td>Parse plaintext CK2 saves and turn them into JSON</td></tr><tr><td><a href=#portraitbuilder-dev>PortraitBuilder</a></td><td>Generate CK2 portraits programmatically</td></tr><tr><td><a href=#chronicler>Chronicler</a></td><td>Extract and format chronicle data from CK2 saves</td></tr></tbody></table><h3 id=libck3>LibCK3</h3><p><a href=https://github.com/scorpdx/LibCK3>LibCK3</a> is a .NET library for reading and parsing Crusader Kings 3 savegames in the binary (Ironman) format. It&rsquo;s actively maintained and updated with new tokens (through <a href=https://github.com/scorpdx/LibCK3.Tokens>LibCK3.Tokens</a>) every patch.</p><p>LibCK3&rsquo;s parser returns an <a href=https://datatracker.ietf.org/doc/html/rfc8259>RFC 8259</a> compliant JSON string representing a CK3 savegame, allowing developers to view and parse any CK3 save with off-the-shelf JSON tools.</p><h3 id=ck3json>ck3json</h3><p><a href=https://github.com/scorpdx/ck3json>ck3json</a> is a console application to convert plaintext format Crusader Kings 3 saves into JSON format, as well as melting binary (ironman) saves into plaintext format. It contains a Parsing Expression Grammar definition that can be helpful for developers who need to extract data from CK3.</p><p>The binary tokens used for melting are not actively updated, but can be extracted from <a href=#libck3>LibCK3.Tokens</a>. The PEG definition should continue to work, barring major changes to the CK3 savegame format.</p><h3 id=ck2json>ck2json</h3><p><a href=https://github.com/scorpdx/ck2json>ck2json</a> is a console application to convert plaintext format Crusader Kings II saves into JSON format. It contains a Parsing Expression Grammar definition that can be helpful for developers who need to extract data from CK2.</p><h3 id=portraitbuilder-dev>PortraitBuilder</h3><p><a href=https://github.com/scorpdx/portraitbuilder>PortraitBuilder</a> is a headless Crusader Kings II portrait generator. It can be used as a standalone desktop application, or can be deployed with a package of graphic assets to support CK2-style portrait rendering in server or library scenarios.</p><p>Portrait links can also be used to share custom character portraits using a hosted portrait service.</p><p><img src="https://portrait.ga/portrait?dna=wofssnplqfk&properties=ea0a000i00000d000000000000000000000000&base=normangfx_male&government=feudal&titlerank=emperor" alt="Handsome Norman Emperor"></p><p>The above portrait was dynamically rendered from this query: <code>portrait?dna=wofssnplqfk&properties=ea0a000i00000d000000000000000000000000&base=normangfx_male&government=feudal&titlerank=emperor</code></p><p>PortraitBuilder was forked from <a href=https://github.com/rquinio/PortraitBuilder>Romain Quinio&rsquo;s Winforms portrait builder</a> and rewritten with SkiaSharp to render into a buffer rather than using Windows GDI+.</p><h3 id=chronicler>Chronicler</h3><p><a href=https://github.com/scorpdx/chronicler>Chronicler</a> is a .NET library for parsing and extracting Chronicles from a Crusader Kings II <em>JSON</em> save. When combined with <a href=#ck2json>ck2json</a>, it can be used to generate timelines and other flavor content from a CK2 save.</p><h4 id=view-a-demo-timelinehttpsjzebedeebitbucketio><a href=https://jzebedee.bitbucket.io/>View a demo timeline</a></h4><div class=nav-next-prev><div class=nav-prev><a class=grayed-out><i class="fas fa-chevron-left"></i></a></div><a class=nav-top href=#>top</i></a><div class=nav-next><a class=grayed-out><i class="fas fa-chevron-right"></i></a></div></div></div><footer><div class=footer-content></div></footer></main></body><script src=https://code.gripe/js/navbutton.js></script></html>
+<!doctype html><html><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=description content="code gripes: development, debugging, performance">
+<meta name=Author content="J. Zebedee">
+<meta name=keywords content="code gripe development debugging performance dotnet rust">
+<link rel=stylesheet href=https://code.gripe/css/syntax.css>
+<link rel=stylesheet href=https://code.gripe/css/style.css>
+<script src=https://kit.fontawesome.com/1b7478c139.js crossorigin=anonymous></script>
+<script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/code.gripe\/"},"articleSection":"posts","name":"scorPDX Quickstart","headline":"scorPDX Quickstart","description":"scorPDX Quickstart scorpdx is a collection of tools and libraries that work with Paradox Interactive games. These are helpful for both Paradox players and developers who create mods and extensions for Paradox games.\nDiscussion, technical support, and developer chit-chat is available on Discord.\nFor Players ⚒️ironmunge Savescum in ironman, explore multiple timelines, and never lose a savegame again\n⚒️ironmunge is a general purpose save manager for Paradox Interactive titles. It automatically manages multiple timelines that you can switch between and explore during a campaign.","inLanguage":"en-US","author":"","creator":"","publisher":"","accountablePerson":"","copyrightHolder":"","copyrightYear":"20207","datePublished":"2021-07-20 14:18:28 -0500 -0500","dateModified":"2021-07-20 14:18:28 -0500 -0500","url":"https:\/\/code.gripe\/posts\/scorpdx-quickstart\/","wordCount":"472","keywords":["Blog"]}</script>
+<title>😡 code.gripe</title>
+</head><body><aside id=sidenav>
+<header>
+<a id=branding href=https://code.gripe/>
+😡 code.gripe
+</a>
+</header>
+<nav>
+</nav>
+</aside>
+<main id=main>
+<a href=javascript:void(0) id=closebtn onclick=navToggle()><i class="fas fa-bars fa-lg"></i></a>
+<div class=content>
+<h1 id=title>scorPDX Quickstart</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#for-players>For Players</a>
+<ul>
+<li><a href=#ironmunge>⚒️ironmunge</a></li>
+<li><a href=#portraitbuilder>PortraitBuilder</a></li>
+</ul>
+</li>
+<li><a href=#for-developers>For Developers</a>
+<ul>
+<li><a href=#libck3>LibCK3</a></li>
+<li><a href=#ck3json>ck3json</a></li>
+<li><a href=#ck2json>ck2json</a></li>
+<li><a href=#portraitbuilder-dev>PortraitBuilder</a></li>
+<li><a href=#chronicler>Chronicler</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+<h1 id=scorpdx-quickstart>scorPDX Quickstart</h1>
+<p><a href=https://github.com/scorpdx>scorpdx</a> is a collection of tools and libraries that work with Paradox Interactive games. These are helpful for both Paradox players and developers who create mods and extensions for Paradox games.</p>
+<p>Discussion, technical support, and developer chit-chat is available on <a href=https://discord.gg/FkRPyz6kcD>Discord</a>.</p>
+<h2 id=for-players>For Players</h2>
+<h3 id=ironmunge>⚒️ironmunge</h3>
+<p>Savescum in ironman, explore multiple timelines, and never lose a savegame again</p>
+<p><a href=https://github.com/scorpdx/ironmunge>⚒️ironmunge</a> is a general purpose save manager for Paradox Interactive titles. It automatically manages multiple timelines that you can switch between and explore during a campaign. It currently supports Crusader Kings II (released) and Crusader Kings 3 (to be released Soon™️).</p>
+<h4 id=download-on-githubhttpsgithubcomscorpdxironmungereleases><a href=https://github.com/scorpdx/ironmunge/releases>Download on Github</a></h4>
+<h3 id=portraitbuilder>PortraitBuilder</h3>
+<p>Create your own CK2 avatar</p>
+<p><img src="https://portrait.ga/portrait?dna=00000000aa0&properties=p000000000000000000000000000000000j000&base=horsegfx_female&clothing=horsegfx_female&government=ChineseImperial&titlerank=Emperor" alt="Chinese Empress Unicorn"></p>
+<h4 id=download-on-githubhttpsgithubcomscorpdxportraitbuilderreleases><a href=https://github.com/scorpdx/portraitbuilder/releases>Download on Github</a></h4>
+<h2 id=for-developers>For Developers</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Blurb</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href=#libck3>LibCK3</a></td>
+<td>Parse binary (ironman) CK3 saves and turn them into JSON</td>
+</tr>
+<tr>
+<td><a href=#libck3>LibCK3.Tokens</a></td>
+<td>Binary (ironman) token definitions for every CK3 patch</td>
+</tr>
+<tr>
+<td><a href=#ck3json>ck3json</a></td>
+<td>Parse plaintext or binary CK3 saves and turn them into JSON</td>
+</tr>
+<tr>
+<td><a href=#ck2json>ck2json</a></td>
+<td>Parse plaintext CK2 saves and turn them into JSON</td>
+</tr>
+<tr>
+<td><a href=#portraitbuilder-dev>PortraitBuilder</a></td>
+<td>Generate CK2 portraits programmatically</td>
+</tr>
+<tr>
+<td><a href=#chronicler>Chronicler</a></td>
+<td>Extract and format chronicle data from CK2 saves</td>
+</tr>
+</tbody>
+</table>
+<h3 id=libck3>LibCK3</h3>
+<p><a href=https://github.com/scorpdx/LibCK3>LibCK3</a> is a .NET library for reading and parsing Crusader Kings 3 savegames in the binary (Ironman) format. It&rsquo;s actively maintained and updated with new tokens (through <a href=https://github.com/scorpdx/LibCK3.Tokens>LibCK3.Tokens</a>) every patch.</p>
+<p>LibCK3&rsquo;s parser returns an <a href=https://datatracker.ietf.org/doc/html/rfc8259>RFC 8259</a> compliant JSON string representing a CK3 savegame, allowing developers to view and parse any CK3 save with off-the-shelf JSON tools.</p>
+<h3 id=ck3json>ck3json</h3>
+<p><a href=https://github.com/scorpdx/ck3json>ck3json</a> is a console application to convert plaintext format Crusader Kings 3 saves into JSON format, as well as melting binary (ironman) saves into plaintext format. It contains a Parsing Expression Grammar definition that can be helpful for developers who need to extract data from CK3.</p>
+<p>The binary tokens used for melting are not actively updated, but can be extracted from <a href=#libck3>LibCK3.Tokens</a>. The PEG definition should continue to work, barring major changes to the CK3 savegame format.</p>
+<h3 id=ck2json>ck2json</h3>
+<p><a href=https://github.com/scorpdx/ck2json>ck2json</a> is a console application to convert plaintext format Crusader Kings II saves into JSON format. It contains a Parsing Expression Grammar definition that can be helpful for developers who need to extract data from CK2.</p>
+<h3 id=portraitbuilder-dev>PortraitBuilder</h3>
+<p><a href=https://github.com/scorpdx/portraitbuilder>PortraitBuilder</a> is a headless Crusader Kings II portrait generator. It can be used as a standalone desktop application, or can be deployed with a package of graphic assets to support CK2-style portrait rendering in server or library scenarios.</p>
+<p>Portrait links can also be used to share custom character portraits using a hosted portrait service.</p>
+<p><img src="https://portrait.ga/portrait?dna=wofssnplqfk&properties=ea0a000i00000d000000000000000000000000&base=normangfx_male&government=feudal&titlerank=emperor" alt="Handsome Norman Emperor"></p>
+<p>The above portrait was dynamically rendered from this query: <code>portrait?dna=wofssnplqfk&properties=ea0a000i00000d000000000000000000000000&base=normangfx_male&government=feudal&titlerank=emperor</code></p>
+<p>PortraitBuilder was forked from <a href=https://github.com/rquinio/PortraitBuilder>Romain Quinio&rsquo;s Winforms portrait builder</a> and rewritten with SkiaSharp to render into a buffer rather than using Windows GDI+.</p>
+<h3 id=chronicler>Chronicler</h3>
+<p><a href=https://github.com/scorpdx/chronicler>Chronicler</a> is a .NET library for parsing and extracting Chronicles from a Crusader Kings II <em>JSON</em> save. When combined with <a href=#ck2json>ck2json</a>, it can be used to generate timelines and other flavor content from a CK2 save.</p>
+<h4 id=view-a-demo-timelinehttpsjzebedeebitbucketio><a href=https://jzebedee.bitbucket.io/>View a demo timeline</a></h4>
+<div class=nav-next-prev>
+<div class=nav-prev>
+<a class=grayed-out><i class="fas fa-chevron-left"></i></a>
+</div>
+<a class=nav-top href=#>top</i></a>
+<div class=nav-next>
+<a class=grayed-out><i class="fas fa-chevron-right"></i></a>
+</div>
+</div>
+</div><footer>
+<div class=footer-content>
+</div>
+</footer></main>
+</body>
+<script src=https://code.gripe/js/navbutton.js></script>
+</html>
