@@ -1,0 +1,291 @@
+<!doctype html><html><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=description content="code gripes: development, debugging, performance">
+<meta name=Author content="J. Zebedee">
+<meta name=keywords content="code gripe development debugging performance dotnet rust">
+<link rel=stylesheet href=https://code.gripe/css/syntax.css>
+<link rel=stylesheet href=https://code.gripe/css/style.css>
+<script src=https://kit.fontawesome.com/1b7478c139.js crossorigin=anonymous></script>
+<script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/code.gripe\/"},"articleSection":"posts","name":"C# Pattern Matching Ranges","headline":"C# Pattern Matching Ranges","description":"Pattern matching ranges C# 9.0 introduced new features in pattern matching that allow range expressions (\u0026lt;, \u0026gt;, \u0026lt;=, \u0026gt;=) in switches.\nI examined the impact of using these new range expressions in an existing project.\nOriginal Method My original method was implemented with pattern matching but without range expressions:\nprivate static (int month, int day) MonthDayFromJulian(int daysSinceJan1) =\u0026gt; daysSinceJan1 switch { int x when x \u0026gt;= 0 \u0026amp;\u0026amp; x \u0026lt;= 30 =\u0026gt; (1, daysSinceJan1 \u002b 1), int x when x \u0026gt;= 31 \u0026amp;\u0026amp; x \u0026lt;= 58 =\u0026gt; (2, daysSinceJan1 - 30), int x when x \u0026gt;= 59 \u0026amp;\u0026amp; x \u0026lt;= 89 =\u0026gt; (3, daysSinceJan1 - 58), int x when x \u0026gt;= 90 \u0026amp;\u0026amp; x \u0026lt;= 119 =\u0026gt; (4, daysSinceJan1 - 89), int x when x \u0026gt;= 120 \u0026amp;\u0026amp; x \u0026lt;= 150 =\u0026gt; (5, daysSinceJan1 - 119), int x when x \u0026gt;= 151 \u0026amp;\u0026amp; x \u0026lt;= 180 =\u0026gt; (6, daysSinceJan1 - 150), int x when x \u0026gt;= 181 \u0026amp;\u0026amp; x \u0026lt;= 211 =\u0026gt; (7, daysSinceJan1 - 180), int x when x \u0026gt;= 212 \u0026amp;\u0026amp; x \u0026lt;= 242 =\u0026gt; (8, daysSinceJan1 - 211), int x when x \u0026gt;= 243 \u0026amp;\u0026amp; x \u0026lt;= 272 =\u0026gt; (9, daysSinceJan1 - 242), int x when x \u0026gt;= 273 \u0026amp;\u0026amp; x \u0026lt;= 303 =\u0026gt; (10, daysSinceJan1 - 272), int x when x \u0026gt;= 304 \u0026amp;\u0026amp; x \u0026lt;= 333 =\u0026gt; (11, daysSinceJan1 - 303), int x when x \u0026gt;= 334 \u0026amp;\u0026amp; x \u0026lt;= 364 =\u0026gt; (12, daysSinceJan1 - 333), _ =\u0026gt; throw new ArgumentOutOfRangeException(nameof(daysSinceJan1)) }; It includes some ugly boilerplate to create the temporary int x variable for each case, in order to compare the pattern expression.","inLanguage":"en-US","author":"","creator":"","publisher":"","accountablePerson":"","copyrightHolder":"","copyrightYear":"212110","datePublished":"2021-10-21 11:27:58 -0500 -0500","dateModified":"2021-10-21 11:27:58 -0500 -0500","url":"https:\/\/code.gripe\/posts\/dotnet\/csharp-pattern-matching-ranges\/","wordCount":"1206","keywords":["Blog"]}</script>
+<title>😡 code.gripe</title>
+</head><body><aside id=sidenav>
+<header>
+<a id=branding href=https://code.gripe/>
+😡 code.gripe
+</a>
+</header>
+<nav>
+</nav>
+</aside>
+<main id=main>
+<a href=javascript:void(0) id=closebtn onclick=navToggle()><i class="fas fa-bars fa-lg"></i></a>
+<div class=content>
+<h1 id=title>C# Pattern Matching Ranges</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#original-method>Original Method</a></li>
+<li><a href=#range-based-method>Range-based method</a></li>
+<li><a href=#performance-differences>Performance differences</a></li>
+</ul>
+</nav>
+<h1 id=pattern-matching-ranges>Pattern matching ranges</h1>
+<p>C# 9.0 introduced <a href=https://github.com/dotnet/csharplang/issues/2850>new features in pattern matching</a> that allow range expressions (<code>&lt;</code>, <code>></code>, <code>&lt;=</code>, <code>>=</code>) in <code>switch</code>es.</p>
+<p>I examined the impact of using these new range expressions in an existing project.</p>
+<h2 id=original-method>Original Method</h2>
+<p><a href=https://sharplab.io/#gist:f3261fc29db3bff6c2fc4b734373c55a>My original method</a> was implemented with pattern matching but without range expressions:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=k>private</span> <span class=k>static</span> <span class=p>(</span><span class=kt>int</span> <span class=n>month</span><span class=p>,</span> <span class=kt>int</span> <span class=n>day</span><span class=p>)</span> <span class=n>MonthDayFromJulian</span><span class=p>(</span><span class=kt>int</span> <span class=n>daysSinceJan1</span><span class=p>)</span>
+<span class=p>=&gt;</span> <span class=n>daysSinceJan1</span> <span class=k>switch</span>
+<span class=p>{</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>0</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>30</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>1</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>+</span> <span class=m>1</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>31</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>58</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>2</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>30</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>59</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>89</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>3</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>58</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>90</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>119</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>4</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>89</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>120</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>150</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>5</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>119</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>151</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>180</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>6</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>150</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>181</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>211</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>7</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>180</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>212</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>242</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>8</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>211</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>243</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>272</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>9</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>242</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>273</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>303</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>10</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>272</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>304</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>333</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>11</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>303</span><span class=p>),</span>
+    <span class=kt>int</span> <span class=n>x</span> <span class=n>when</span> <span class=n>x</span> <span class=p>&gt;=</span> <span class=m>334</span> <span class=p>&amp;&amp;</span> <span class=n>x</span> <span class=p>&lt;=</span> <span class=m>364</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>12</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>333</span><span class=p>),</span>
+    <span class=m>_</span> <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>ArgumentOutOfRangeException</span><span class=p>(</span><span class=n>nameof</span><span class=p>(</span><span class=n>daysSinceJan1</span><span class=p>))</span>
+<span class=p>};</span>
+</code></pre></div><p>It includes some ugly boilerplate to create the temporary <code>int x</code> variable for each case, in order to compare the pattern expression. The IL produced by this implementation also sets up a local variable for each <code>int x</code> declared:</p>
+<pre tabindex=0><code class=language-cil data-lang=cil>.method private hidebysig static 
+    valuetype [System.Private.CoreLib]System.ValueTuple`2&lt;int32, int32&gt; MonthDayFromJulian (
+        int32 daysSinceJan1
+    ) cil managed 
+{
+    .param [0]
+        .custom instance void [System.Private.CoreLib]System.Runtime.CompilerServices.TupleElementNamesAttribute::.ctor(string[]) = (
+            01 00 02 00 00 00 05 6d 6f 6e 74 68 03 64 61 79
+            00 00
+        )
+    // Method begins at RVA 0x2080
+    // Code size 445 (0x1bd)
+    .maxstack 3
+    .locals init (
+👉        [0] int32 x,
+👉        [1] int32 x,
+👉        [2] int32 x,
+👉        [3] int32 x,
+👉        [4] int32 x,
+👉        [5] int32 x,
+👉        [6] int32 x,
+👉        [7] int32 x,
+👉        [8] int32 x,
+👉        [9] int32 x,
+👉        [10] int32 x,
+👉        [11] int32 x,
+        [12] valuetype [System.Private.CoreLib]System.ValueTuple`2&lt;int32, int32&gt;,
+        [13] valuetype [System.Private.CoreLib]System.ValueTuple`2&lt;int32, int32&gt;
+    )
+</code></pre><p>Fortunately, when this expression is compiled to procedural code, the compiler inlines these temporary variables and generates a gateway-style method with several flat branches:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=na>[return: TupleElementNames(new string[]</span> <span class=p>{</span> <span class=s>&#34;month&#34;</span><span class=p>,</span> <span class=s>&#34;day&#34;</span> <span class=p>})]</span>
+<span class=k>private</span> <span class=k>static</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;</span> <span class=n>MonthDayFromJulian</span><span class=p>(</span><span class=kt>int</span> <span class=n>daysSinceJan1</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>0</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>30</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>1</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>+</span> <span class=m>1</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>31</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>58</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>2</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>30</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>59</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>89</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>3</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>58</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>90</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>119</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>4</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>89</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>120</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>150</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>5</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>119</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>151</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>180</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>6</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>150</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>181</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>211</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>7</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>180</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>212</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>242</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>8</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>211</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>243</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>272</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>9</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>242</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>273</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>303</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>10</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>272</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>304</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>333</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>11</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>303</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>334</span> <span class=p>&amp;&amp;</span> <span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>364</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>12</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>333</span><span class=p>);</span>
+    <span class=p>}</span>
+    <span class=k>throw</span> <span class=k>new</span> <span class=n>ArgumentOutOfRangeException</span><span class=p>(</span><span class=s>&#34;daysSinceJan1&#34;</span><span class=p>);</span>
+<span class=p>}</span>
+</code></pre></div><p>On x64, this produces jitted output closely matching the procedural output, with several branching comparisons against our <code>daysSinceJan1</code> parameter.</p>
+<h2 id=range-based-method>Range-based method</h2>
+<p>I hoped that <a href=https://sharplab.io/#gist:a6f31c220be9c35c2e8343f6d0b36cc1>replacing the temporary variable usage with range-based pattern matching</a> would avoid the unnecessary temporary variables and speed up the lookup:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=k>private</span> <span class=k>static</span> <span class=p>(</span><span class=kt>int</span> <span class=n>month</span><span class=p>,</span> <span class=kt>int</span> <span class=n>day</span><span class=p>)</span> <span class=n>MonthDayFromJulian</span><span class=p>(</span><span class=kt>int</span> <span class=n>daysSinceJan1</span><span class=p>)</span>
+<span class=p>=&gt;</span> <span class=n>daysSinceJan1</span> <span class=k>switch</span>
+<span class=p>{</span>
+    <span class=p>(&gt;=</span> <span class=m>0</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>30</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>1</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>+</span> <span class=m>1</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>31</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>58</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>2</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>30</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>59</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>89</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>3</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>58</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>90</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>119</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>4</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>89</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>120</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>150</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>5</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>119</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>151</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>180</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>6</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>150</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>181</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>211</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>7</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>180</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>212</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>242</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>8</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>211</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>243</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>272</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>9</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>242</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>273</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>303</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>10</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>272</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>304</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>333</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>11</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>303</span><span class=p>),</span>
+    <span class=p>(&gt;=</span> <span class=m>334</span> <span class=n>and</span> <span class=p>&lt;=</span> <span class=m>364</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>(</span><span class=m>12</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>333</span><span class=p>),</span>
+    <span class=m>_</span> <span class=p>=&gt;</span> <span class=k>throw</span> <span class=k>new</span> <span class=n>ArgumentOutOfRangeException</span><span class=p>(</span><span class=n>nameof</span><span class=p>(</span><span class=n>daysSinceJan1</span><span class=p>))</span>
+<span class=p>};</span>
+</code></pre></div><p>The generated IL confirms that the additional locals are avoided:</p>
+<pre tabindex=0><code class=language-cil data-lang=cil>.method private hidebysig static 
+    valuetype [System.Private.CoreLib]System.ValueTuple`2&lt;int32, int32&gt; MonthDayFromJulian (
+        int32 daysSinceJan1
+    ) cil managed 
+{
+    .param [0]
+        .custom instance void [System.Private.CoreLib]System.Runtime.CompilerServices.TupleElementNamesAttribute::.ctor(string[]) = (
+            01 00 02 00 00 00 05 6d 6f 6e 74 68 03 64 61 79
+            00 00
+        )
+    // Method begins at RVA 0x2080
+    // Code size 343 (0x157)
+    .maxstack 3
+👉  .locals init (
+        [0] valuetype [System.Private.CoreLib]System.ValueTuple`2&lt;int32, int32&gt;,
+        [1] valuetype [System.Private.CoreLib]System.ValueTuple`2&lt;int32, int32&gt;
+    )
+</code></pre><p>However, the procedural output is now a bubble-style method with nested branches:</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=na>[return: TupleElementNames(new string[]</span> <span class=p>{</span> <span class=s>&#34;month&#34;</span><span class=p>,</span> <span class=s>&#34;day&#34;</span> <span class=p>})]</span>
+<span class=k>private</span> <span class=k>static</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;</span> <span class=n>MonthDayFromJulian</span><span class=p>(</span><span class=kt>int</span> <span class=n>daysSinceJan1</span><span class=p>)</span>
+<span class=p>{</span>
+    <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>150</span><span class=p>)</span>
+    <span class=p>{</span>
+        <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;</span> <span class=m>89</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>119</span><span class=p>)</span>
+            <span class=p>{</span>
+                <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>4</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>89</span><span class=p>);</span>
+            <span class=p>}</span>
+            <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>5</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>119</span><span class=p>);</span>
+        <span class=p>}</span>
+        <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;</span> <span class=m>30</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>58</span><span class=p>)</span>
+            <span class=p>{</span>
+                <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>2</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>30</span><span class=p>);</span>
+            <span class=p>}</span>
+            <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>3</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>58</span><span class=p>);</span>
+        <span class=p>}</span>
+        <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&gt;=</span> <span class=m>0</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>1</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>+</span> <span class=m>1</span><span class=p>);</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+    <span class=k>else</span>
+    <span class=p>{</span>
+        <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>272</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>211</span><span class=p>)</span>
+            <span class=p>{</span>
+                <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>180</span><span class=p>)</span>
+                <span class=p>{</span>
+                    <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>6</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>150</span><span class=p>);</span>
+                <span class=p>}</span>
+                <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>7</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>180</span><span class=p>);</span>
+            <span class=p>}</span>
+            <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>242</span><span class=p>)</span>
+            <span class=p>{</span>
+                <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>8</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>211</span><span class=p>);</span>
+            <span class=p>}</span>
+            <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>9</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>242</span><span class=p>);</span>
+        <span class=p>}</span>
+        <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>333</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>303</span><span class=p>)</span>
+            <span class=p>{</span>
+                <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>10</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>272</span><span class=p>);</span>
+            <span class=p>}</span>
+            <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>11</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>303</span><span class=p>);</span>
+        <span class=p>}</span>
+        <span class=k>if</span> <span class=p>(</span><span class=n>daysSinceJan1</span> <span class=p>&lt;=</span> <span class=m>364</span><span class=p>)</span>
+        <span class=p>{</span>
+            <span class=k>return</span> <span class=k>new</span> <span class=n>ValueTuple</span><span class=p>&lt;</span><span class=kt>int</span><span class=p>,</span> <span class=kt>int</span><span class=p>&gt;(</span><span class=m>12</span><span class=p>,</span> <span class=n>daysSinceJan1</span> <span class=p>-</span> <span class=m>333</span><span class=p>);</span>
+        <span class=p>}</span>
+    <span class=p>}</span>
+    <span class=k>throw</span> <span class=k>new</span> <span class=n>ArgumentOutOfRangeException</span><span class=p>(</span><span class=s>&#34;daysSinceJan1&#34;</span><span class=p>);</span>
+<span class=p>}</span>
+</code></pre></div><p>On x64, this produces jitted output of a jump table, as if our pattern matching expression was a large <code>switch</code> statement with fall-through cases in between the comparison values.</p>
+<h2 id=performance-differences>Performance differences</h2>
+<p>These differences in code generation do have an effect on real-world performance, primarily through reducing branch mispredictions.</p>
+<pre tabindex=0><code>BenchmarkDotNet=v0.13.1, OS=Windows 10.0.22000
+AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
+.NET SDK=6.0.100-rc.2.21505.57
+  [Host]     : .NET 6.0.0 (6.0.21.48005), X64 RyuJIT
+  Job-PKIECE : .NET 6.0.0 (6.0.21.48005), X64 RyuJIT
+
+RunStrategy=Throughput
+</code></pre><table>
+<thead>
+<tr>
+<th>Method</th>
+<th style=text-align:right>Mean</th>
+<th style=text-align:right>Error</th>
+<th style=text-align:right>StdDev</th>
+<th style=text-align:right>BranchInstructions/Op</th>
+<th style=text-align:right>BranchMispredictions/Op</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CountMonths</td>
+<td style=text-align:right>2.594 us</td>
+<td style=text-align:right>0.0160 us</td>
+<td style=text-align:right>0.0134 us</td>
+<td style=text-align:right>6,443</td>
+<td style=text-align:right>22</td>
+</tr>
+<tr>
+<td>CountMonthsNew</td>
+<td style=text-align:right>2.327 us</td>
+<td style=text-align:right>0.0079 us</td>
+<td style=text-align:right>0.0070 us</td>
+<td style=text-align:right>3,333</td>
+<td style=text-align:right>14</td>
+</tr>
+</tbody>
+</table>
+<div class=nav-next-prev>
+<div class=nav-prev>
+<a href=https://code.gripe/posts/scorpdx-quickstart/><i class="fas fa-chevron-left"></i></a>
+</div>
+<a class=nav-top href=#>top</i></a>
+<div class=nav-next>
+<a class=grayed-out><i class="fas fa-chevron-right"></i></a>
+</div>
+</div>
+</div><footer>
+<div class=footer-content>
+</div>
+</footer></main>
+</body>
+<script src=https://code.gripe/js/navbutton.js></script>
+</html>
