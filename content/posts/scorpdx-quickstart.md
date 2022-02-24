@@ -23,7 +23,7 @@ Savescum in ironman, explore multiple timelines, and never lose a savegame again
 
 Create your own CK2 avatar
 
-![Chinese Empress Unicorn](https://portrait.ga/portrait?dna=00000000aa0&properties=p000000000000000000000000000000000j000&base=horsegfx_female&clothing=horsegfx_female&government=ChineseImperial&titlerank=Emperor)
+![Chinese Empress Unicorn](https://portraitbuilder.azurewebsites.net/api/portrait?dna=00000000aa0&properties=p000000000000000000000000000000000j000&base=horsegfx_female&clothing=horsegfx_female&government=ChineseImperial&titlerank=Emperor)
 
 #### [Download on Github](https://github.com/scorpdx/portraitbuilder/releases)
 
@@ -60,7 +60,7 @@ The binary tokens used for melting are not actively updated, but can be extracte
 
 Portrait links can also be used to share custom character portraits using a hosted portrait service.
 
-![Handsome Norman Emperor](https://portrait.ga/portrait?dna=wofssnplqfk&properties=ea0a000i00000d000000000000000000000000&base=normangfx_male&government=feudal&titlerank=emperor)
+![Handsome Norman Emperor](https://portraitbuilder.azurewebsites.net/api/portrait?dna=wofssnplqfk&properties=ea0a000i00000d000000000000000000000000&base=normangfx_male&government=feudal&titlerank=emperor)
 
 The above portrait was dynamically rendered from this query: `portrait?dna=wofssnplqfk&properties=ea0a000i00000d000000000000000000000000&base=normangfx_male&government=feudal&titlerank=emperor`
 
